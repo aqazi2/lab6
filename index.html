@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lab 6</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""/>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
+
+    <link href='https://fonts.googleapis.com/css?family=Acme' rel='stylesheet'>
+
+    <style type="text/css">
+        html, body { margin: 0; padding: 0; height: 100%; }
+        #map { min-height: 100%; }
+
+        .title {
+            padding: 6px 8px;
+            font-family: 'Acme'; font-size: 22px;
+            background: white;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+    </style>
+
+    <!-- Load animation tweening library requirement for CanvasFlowMapLayer -->
+    <script src="https://unpkg.com/@tweenjs/tween.js@18.6.4/dist/tween.umd.js"></script>
+
+    <!-- Load CanvasFlowMapLayer; change the path (relative URL) if necessary -->
+    <script src="CanvasFlowmapLayer.js"></script>
+
+    <script type="text/javascript" src="cook.js"></script>
+</head>
+
+<body>
+    <div id="map"></div>
+
+    <script type="text/javascript">
+
+        var map = L.map('map', {
+            center: [38.6367781, -95.8374063],
+            zoom: 4
+        });
+
+        L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
+            attribution: 'Map tiles by Carto, under CC BY 3.0. Data by OpenStreetMap, under ODbL.',
+            maxZoom: 11,
+            minZoom: 3
+        }).addTo(map);
+
+        L.canvasFlowmapLayer(data, {
+            originAndDestinationFieldIds: {
+                originUniqueIdField: 'GEOID_B',
+                originGeometry: {
+                    x: 'B_lon',
+                    y: 'B_lat'
+                },
+                destinationUniqueIdField: 'GEOID_A',
+                destinationGeometry: {
+                    x: 'A_lon',
+                    y: 'A_lat'
+                }
+            },
+
+            canvasBezierStyle: {
+                type: 'classBreaks',
+                field: 'Flow_B2A', // Change this to inflow data
+
+                classBreakInfos: [{
+                    classMinValue: 1000, // Adjust the class break values based on your data
+                    classMaxValue: 5000,
+                    symbol: {
+                        strokeStyle: 'yellow',
+                        lineWidth: 12,
+                        lineCap: 'round',
+                    }
+                }, {
+                    classMinValue: 500,
+                    classMaxValue: 999,
+                    symbol: {
+                        strokeStyle: 'yellow',
+                        lineWidth: 8,
+                        lineCap: 'round',
+                    }
+                }, {
+                    classMinValue: 200,
+                    classMaxValue: 499,
+                    symbol: {
+                        strokeStyle: 'yellow',
+                        lineWidth: 4.5,
+                        lineCap: 'round',
+                    }
+                }],
+            },
+
+            pathDisplayMode: 'all',
+            animationStarted: true,
+            animationEasingFamily: 'Cubic',
+            animationEasingType: 'In',
+            animationDuration: 2000
+        }).addTo(map);
+
+        var title = L.control({ position: 'topright' });
+
+        title.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'title');
+            this._div.innerHTML = "<h3>TOP 10 Gross Inflow to Cook County, Illinois</h3>";
+            return this._div;
+        };
+
+        title.addTo(map);
+
+    </script>
+</body>
+</html>
